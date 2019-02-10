@@ -1,0 +1,85 @@
+-------------------------------------------------
+CHAPTER 1 - OVERVIEW
+-------------------------------------------------
+
+- Boot Process
+
+    1. Computer is powered on.
+    2. Bootstrap program (stored in firmware) does initializes all aspects of system
+         - initializes values of CPU registers, memory constants, device controllers
+         - knows how to load os kernel into memory and start executing
+    3. Operating system starts executing the first process init() and waits for 
+         events to occur.
+    4. The occurrence of an event is usually signalled by an interrupt from either
+         software or hardware.
+         - Hardware may trigger an interrupt at any time by sending a signal to the 
+             CPU along the system bus.
+         - Software may trigger an interrupt by making a system call (aka monitor call)
+    5. When the system is interrupted, it stops what it is doing and immediately 
+         transfers execution to a fixed location containing the service routine for
+         the interrupt.  After the routine is finished, the CPU resumes where it left
+         off.  The list of addresses to service routines is called the 'interrupt
+         vector'.
+
+
+- Parallel = multiple processors in a machine
+  Cluster  = multiple machines connected in a LAN
+
+
+- User mode vs Kernel mode
+    - At system boot time, hardware starts in kernel mode
+    - The OS is loaded and runs applications in user mode
+    - When an interrupt, trap, or system call occurs, kernel mode is entered
+
+    - Privileged instruction = can only be executed in kernel mode
+    - MS DOS was written for Intel 8088, which didnt have hardware dual mode!
+
+
+- Timer prevents user applications from getting stuck in infinite loop or deadlock
+
+
+- Process = time-shared user program loaded in memory and executing
+
+     OS is responsible for:
+       1. Creating and deleting user and system processes
+       2. Suspending and resuming processes
+       3. Providing mechanisms for process synchronization
+       4. Providing mechanisms for process communication
+       5. Providing mechanisms for deadlock handling
+
+
+- Memory Management
+
+     OS is responsible for:
+       1. Keeping track of which segments of memory are currently being used and by whom
+       2. Deciding which processes and data to move in and out of memory
+       3. Allocating and de-allocating memory space as needed
+
+
+- File Management
+
+     OS is responsible for:
+       1. Creating and deleting files
+       2. Creating and deleting directories
+       3. Supporting primitives for manipulating files and directories
+       4. Mapping files onto secondary storage
+       5. Backing up files
+
+       - Mass storage management tasks like free space management, storage allocation, 
+           and disk scheduling
+       - Caching, cache coherency
+
+       - IO Subsystem = hides the bulk of the complexity of dealing with io devices
+           1. memory management component
+           2. general device driver interface
+           3. drivers for specific devices
+
+
+- Protection and Security
+
+    Protection = controlling a process or user's access to resources
+      - Making sure a process can only access its own memory space
+      - User programs cant access CPU registers, etc...
+
+    Security   = protect against internal and external attacks
+      - Maintain users and groups, etc...
