@@ -41,8 +41,8 @@ CHAPTER 3 - PROCESSES
         processes in the system.
 
     - The processes that are residing in main memory and are ready and waiting 
-        to execute are kept on a list called the 'ready queue'.  Both queues are
-        implemented as linked lists of PCBs.
+        to execute are kept on a list called the 'ready queue'.  An IO-request queue
+        is also residing in memory.  All queues are implemented as linked lists of PCBs.
 
     - Long term scheduler  = Select processes from job queue and loads them into memory
     - Short term scheduler = Selects processes to execute
@@ -125,5 +125,145 @@ CHAPTER 3 - PROCESSES
             wait(NULL);
             printf("Child complete");
             exit(0);
+        }
+    }
+
+
+- The Producer/Consumer Problem
+
+    - A 'producer' produces information that is consumed by a 'consumer' 
+        process.  We can think of a producer as a server and a consumer as
+        a client.
+
+    - One solution to the problem uses shared memory.  We have a buffer that
+        will reside in shared memory.  Producers will add items, and consumers
+        will remove them.
+
+      Two types of buffers can be used:
+        1. Unbounded buffer = no limit on size
+        2. Bounded buffer   = fixed buffer size
+
+
+- Buffer Implementation
+
+    #define BUFFER_SIZE 10
+
+    typedef struct {
+        ...
+    }item;
+
+    item buffer[BUFFER_SIZE];
+    int in = 0;       /* Next free position in the buffer */
+    int out = 0;      /* First full position in the buffer */
+
+
+- Producer Process
+
+    item nextProduced;
+
+    while (true) {
+        /* Produce nextProduced */
+        while ((in + 1) % BUFFER_SIZE == out) ;  /* Wait until spot opens */
+        buffer[in] = nextProduced;
+        in = (in + 1) % BUFFER_SIZE;
+    }
+
+
+- Consumer Process
+
+    item nextConsumed;
+
+    while(true) {
+        while(in == out) ;   /* Wait for item */
+        nextConsumed = buffer[out];
+        out = (out + 1) % BUFFER_SIZE;
+        /* Consume nextConsumed */
+    }
+
+
+- Message-Passing Systems
+
+    Message passing provides a mechanism to allow processes to communicate
+      and synchronize their actions without sharing an address space.
+      This makes them useful in distributed environments.
+
+    /* Direct communication, sender and receiver must know each other's identities */
+    send(P, message)
+    receive(Q, message)
+
+    /* Direct communication, receiver can receive from any process
+    send(P, message)
+    receive(id, message)
+
+    /* Indirect communication with mailbox A */
+    send(A, message)
+    receive(A, message)
+
+
+- Message Passing Synchronization
+
+    Blocking Send       = Sender is blocked until message is received
+    Nonblocking Send    = Sender sends message, then resumes operation
+
+    Blocking Recieve    = Receiver is blocked until message is available
+    Nonblocking Receive = Receiver either retrieves valid message or NULL
+
+
+- Example - POSIX Shared Memory
+
+    #include <stdio.h>
+    #include <sys/shm.h>
+    #include <sys/stat.h>
+
+    int main() {
+        /* The identifier for the shared memory segment */
+        int segment_id;
+
+        /* A pointer to the shared memory segment */
+        char* shared_memory;
+
+        /* The size (in bytes) of the memory segment */
+        const int size = 4096;
+
+        /* Allocate a shared memory segment */
+        segment_id = shmget(IPC_PRIVATE, size, I_IRUSR | I_IWUSR);
+
+        /* Attach the shared memory segment */
+        shared_memory = (char *) shmat(segment_id, NULL, 0);
+
+        /* Write a message to the shared memory segment */
+        sprintf(shared_memory, "Hi there!");
+
+        /* Now, print out the string from shared memory */
+        printf("*%s\n", shared_memory);
+
+        /* Detach the shared memory segment */
+        shmdt(shared_memory);
+
+        /* Remove the shared memory segment */
+        shmctl(segment_id, IPC_RMID, NULL);
+    }
+
+
+- Example - Java Sockets
+
+    import java.net.*;
+    import java.io.*;
+
+    public class DateServer {
+        public static void main(String[] args) {
+            try {
+                ServerSocket sock = new ServerSocket(6013);
+
+                /* Listen for connections */
+                while(true) {
+                    Socket client = sock.accept();
+                    PrintWriter pout = new PrintWriter(client.getOutputStream(), true);
+                    pout.println(new java.util.Date().toString());
+                    client.close();
+                }
+            } catch (IOException ioe) {
+                System.err.println(ioe);
+            }
         }
     }
