@@ -1,0 +1,72 @@
+-------------------------------------------------
+CHAPTER 2 - OPERATING SYSTEM STRUCTURES
+-------------------------------------------------
+
+- Operating System Services
+
+    1. User interface
+    2. Program execution
+    3. IO Operations
+    4. File system manipulation
+    5. Communications Between Processes
+    6. Error Detection
+    7. Resource allocation
+    8. Accounting
+    9. Protection and Security
+
+
+- Operating System User Interfaces
+
+    1. Command interpreter (shell)
+         - One approach is to implement the commands in the shell itself
+         - The UNIX approach to command interpreter = shell itself doesn't understand commands,
+             it just uses command to figure out which file to run to execute the command
+    2. GUIs
+
+
+- Types of System Calls
+
+    1. Process Control
+         - end, abort
+         - load, execute
+         - create process, terminate process
+         - get process attributes, set process attributes
+         - wait for time
+         - wait event, signal event
+         - allocate and free memory
+
+    2. File Management
+         - create file, delete file
+         - open, close
+         - read, write, reposition
+         - get file attributes, set file attributes
+
+    3. Device Management
+         - request device, release device
+         - read, write, reposition
+         - get device attributes, set device attributes
+         - logically attach or detach devices
+
+    4. Information Maintenance
+         - get time and date, set time and date
+         - get system data, set system data
+         - get process, file, or device attributes
+         - set process, file, or device attributes
+
+    5. Communications
+         - create, delete communication connection
+         - send, receive messages
+         - transfer status information
+         - attach or detach remote devices
+
+
+- Two Models of Interprocess Communication
+
+    1. Message Passing Model
+         - Processes exchange messages with each other
+         - Messages can be exchanged either directly or indirectly through
+             a common mailbox.
+
+    2. Shared Memory Model
+         - Processes used system calls to create and gain access to memory
+             owned by other processes.
