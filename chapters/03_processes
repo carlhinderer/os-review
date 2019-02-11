@@ -1,0 +1,129 @@
+-------------------------------------------------
+CHAPTER 3 - PROCESSES
+-------------------------------------------------
+
+- Processes
+
+    A process (or job) is a program in execution.  It contains:
+      - The program code (the 'text section')
+      - The current state (PC and contents of CPU registers)
+      - The process stack (temporary data such as function parameters, 
+                             return addresses, and local variables)
+      - The data section (global variables)
+      - The process heap (if applicable)
+
+
+- Process States
+
+    New         = The process is being created.
+    Running     = Instructions are being executed.
+    Waiting     = The process is waiting for some event to occur (such as I/O).
+    Ready       = The process is waiting to be assigned to a processor.
+    Terminated  = The process has finished execution.
+
+
+- Process Control Block
+
+    PCB Contains
+      - Process State
+      - Process Number
+      - Program Counter
+      - Registers
+      - CPU Scheduling Information (Priority, Pointers to queues, etc)
+      - Memory Management Information (Base and Limit Registers, Page Tables, etc)
+      - Accounting Information (Time Limits, etc)
+      - IO Status Information (List of open files, list of devices, etc)
+
+
+- Process Scheduling
+
+    - As processes enter the system, they are put into the 'job queue' of all 
+        processes in the system.
+
+    - The processes that are residing in main memory and are ready and waiting 
+        to execute are kept on a list called the 'ready queue'.  Both queues are
+        implemented as linked lists of PCBs.
+
+    - Long term scheduler  = Select processes from job queue and loads them into memory
+    - Short term scheduler = Selects processes to execute
+
+    - Degree of Multiprogramming = number of processes in memory
+
+    - IO-Bound Process    = generates a lot of IO requests
+      CPU-Bound Process   = generates few IO requests
+
+      The goal of the long-term scheduler is to select a good mix of IO-Bound and 
+        CPU-Bound processes.
+
+    - Context Switch = switch from one executing PCB to another (context of executing
+                        process is saved in PCB and context of new process is loaded
+                        from its PCB)
+
+
+- Linux Processes
+
+    The PCB in Linux is represented by the structure 'task_struct'.  It contains
+      the state of the process, scheduling and memory management information,
+      a list of open files, and pointers to the process's parent and children.
+
+      /* Some fields of the task_struct */
+      pid_t pid;                     /* process identifier */
+      long state;                    /* state of the process */
+      unsigned int time_slice;       /* scheduling information */
+      struct files_struct *files;    /* list of open files */
+      struct mm_struct *mm;          /* address space of this process */
+
+      // Command to get complete process information
+      ps -el
+
+
+- Process Creation
+
+    When a process creates a new process, 2 possibilities exist in terms of 
+      execution:
+
+      1. The parent continues to execute concurrently with its children.
+      2. The parent waits until some or all of its children have terminated.
+
+    There are also 2 possibilities in terms of address space of the new process:
+
+      1. The child process is a duplicate of the parent process (has the same
+           program and data as the parent)
+      2. The child process has a new program loaded into it.
+
+
+    - A new process is created by the fork() system call.  The process consists of
+        a copy of the address space of the original process.  Both processes
+        continue after the fork(), but the fork() returns 0 to the child
+        process and the pid of the child to the parent.
+
+    - Then, the exec() call is used to replace the parent's memory space with
+        a new program.
+
+
+- Example - Creating a new process
+
+    #include <sys/types.h>
+    #include <stdio.h>
+    #include <unistd.h>
+
+    int main() {
+        pid_t pid;
+
+        /* Fork a child process */
+        pid = fork();
+
+        if (pid < 0) {
+            /* An error occurred */
+            fprintf(stderr, "Fork failed");
+            exit(-1);
+        } else if (pid == 0) {
+            /* Child process */
+            execlp("/bin/ls", "ls", NULL);
+        } else {
+            /* Parent process will wait for child to complete */
+            wait(NULL);
+            printf("Child complete");
+            exit(0);
+        }
+    }
