@@ -58,4 +58,72 @@ CHAPTER 5 - CPU SCHEDULING
     - Theoretical algorithm: just always pick the process with the shortest CPU burst
     - Optimal waiting time
     - Cannot actually be implemented by short term scheduler.  Some long term schedulers 
-        will actually try to predict burst by looking at previous bursts, though.
+        will actually try to predict bursts by looking at previous bursts, though.
+
+
+- Priority Scheduling
+    - Includes class of algorithms that assigns priorities to processes to make
+        scheduling decisions
+    - One problem that can arise is 'starvation', when a lower priority process never
+        runs, because higher priority processes are always blocking it.  One solution
+        is to 'age' processes by increasing their priority over time.
+
+
+- Round-Robin Scheduling
+    - A 'time quantam' is defined, and processes are put into a FIFO queue.  Then each
+        process in the queue is executed for the time quantam, then put a the back
+        of the queue.
+
+
+- Multilevel Queue Scheduling
+    - Multiple queues are used, each with different priorities
+        - System Processes (Highest)
+        - Interactive Processes
+        - Interactive Editing Processes
+        - Batch Processes
+        - Student Proesses (Lowest)
+
+
+- Multilevel Feedback-Queue Scheduling
+    - Multiple queues, processes can move between them depending on whether they have
+        long CPU or IO bursts
+
+
+- Multi-Processor Scheduling
+
+    - Asymmetric Multiprocessing
+        - All scheduling decisions, I/O processing, system activities are done by a 
+            master processor.  
+        - The other processors only run user code.
+
+    - Symmetric Multiprocessing (SMP)
+        - Each processor is self-scheduling.
+
+    - Processor Affinity
+        - One problem is that every time you switch processes on a  processor, you have to 
+            clear the CPU cache for that processor, and this is expensive.  So, there are 
+            strategies to avoid this.
+        - 'Soft affinity' is a strategy in which the scheduler will attempt to keep 
+            proceeses on one CPU.
+        - 'Hard affinity' is when the OS guarantees the process will stay on one CPU.
+
+    - Load Balancing
+        - How to balance workload evenly across all processes?  We can
+        either push tasks to CPUs becoming idle or pull tasks from busy CPUs.
+
+    - Symmetric Multithreading
+        - Strategy to run several threads on virtual processors rather than physical ones.
+        - This is a hardware feature, not one provided by the os.  Intel processors call this 
+            'hyperthreading'.
+
+
+- Thread Scheduling
+
+    - Since user threads are mapped to kernel threads, there is an additional layer of 
+        complexity when trying to schedule the user threads.
+
+    - The strategy known as 'Process Contention Scope' tries to resolve conflicts among 
+        competing user threads on the same kernel thread.
+
+    - The 'System Contention Scope' strategy is used to schedule the kernel threads 
+        themselves.
