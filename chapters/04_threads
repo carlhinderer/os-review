@@ -1,0 +1,90 @@
+-------------------------------------------------
+CHAPTER 4 - THREADS
+-------------------------------------------------
+
+- Reasons for multithreaded applications
+
+    1. Responsiveness
+    2. Resource Sharing
+    3. Economy (ie creating a process is 30x slower than a thread in Solaris)
+    4. Utilizing multiprocessor architectures
+
+
+- Multithreading Models
+
+    1. Many-to-one
+         - Many user threads are mapped to one kernel thread
+         - Thread management is done in user space, so is efficient
+         - Entire process will block if a blocking system call is made
+         - Limitation is that threads can only run on a single CPU
+         - Examples include GreenThreads and GNU Portable Threads
+
+    2. One-to-one
+         - Each user thread is mapped to a kernel thread
+         - Has more overhead, since more kernel threads have to be created
+         - Provides more concurrency, can run on multiple CPUs
+         - Examples include Linux and Windows
+
+    3. Many-to-many
+         - Compromise allows for higher degree of multiprogramming by having
+             a few kernel threads, but not having to create a kernel thread
+             with each user thread
+         - Examples include HP-UX and older versions of Solaris
+
+
+- Thread Libraries
+
+    There are 2 primary ways of implementing a thread library.  
+      1. In user space with no kernel support
+      2. Implement a kernel-level library supported by the OS and make system calls
+
+    The 3 best known thread libraries are:
+      1. POSIX Pthreads (can be provided as a user-level or kernel-level library)
+      2. Win32 (kernel-level)
+      3. Java (Usually implemented using a kernel-level library like PThreads or Win32)
+
+
+- Pthreads
+
+    Pthreads is a specification for thread behavior, not an implementation.  Operating
+      system designers may implement the spec however they wish.
+
+
+- Example - Integer summation with Pthreads (in C)
+
+    #include <pthread.h>
+    #include <stdio.h>
+
+    int sum;                     /* This is shared by the threads */
+    void *runner(void *param);   /* The thread */
+
+    int main(int argc, char *argv[]) {
+        pthread_t tid;           /* The thread identifier */
+        pthread_attr_t attr;     /* Set of thread attributes */
+
+        if (argc != 2) {
+            fprintf(stderr, "usage: a.out <integer value>\n");
+            return -1;
+        }
+        if (atoi(argv[1]) < 0) {
+            fprintf(stderr, "%d must be >= 0\n", atoi(argv[1]));
+            return -1;
+        }
+
+        pthread_attr_init(&attr);    /* Get the default attributes */
+        pthread_create(&tid, &attr, runner, argv[1]);  /* Create the thread */
+        pthread_join(tid, NULL);     /* Wait for the thread to exit */
+
+        printf("sum = %d\n", sum);
+    }
+
+    /* The thread will begin control in this function */
+    void *runner(void *param) {
+         int i, upper = atoi(param);
+         sum = 0;
+
+         for (i=1; i <= upper; i++) {
+             sum += 1;
+         }
+         pthread_exit(0);
+    }
