@@ -127,3 +127,83 @@ CHAPTER 5 - CPU SCHEDULING
 
     - The 'System Contention Scope' strategy is used to schedule the kernel threads 
         themselves.
+
+
+- Configuring PCS and SCS in Pthreads
+
+    /* Contention Scope Variables */
+    PTHREAD_SCOPE_PROCESS      /* Schedules threads using PCS scheduling */
+    PTHREAD_SCOPE_SYSTEM       /* Schedules threads using SCS scheduling */
+
+    /* Functions for getting/setting contention scope policy */
+    pthread_attr_setscope (pthread_attr_t *attr, int scope)
+    pthread_attr_getscope (pthread_attr_t *attr, int *scope)
+
+
+- Example - Configure PCS and SCS in Pthreads
+
+    #include <pthread.h>
+    #include <stdio.h>
+    #define NUM_THREADS 5
+
+    int main(int argc, char *argv[]) {
+        int i, scope;
+        pthread_t tid[NUM_THREADS];
+        pthread_attr_t attr;
+
+        /* Get the default attributes */
+        pthread_attr_init(&attr);
+
+        /* First inquire on the current scope */
+        if (pthread_attr_getscope(&attr, &scope) != 0) {
+            fprintf(stderr, "Unable to get scheduling scope\n");
+        } else {
+            if (scope == PTHREAD_SCOPE_PROCESS)
+                printf("PTHREAD_SCOPE_PROCESS");
+            else if (scope == PTHREAD_SCOPE_SYSTEM)
+                printf("PTHREAD_SCOPE_SYSTEM");
+            else
+                fprintf(stderr, "Illegal scope value.\n");
+        }
+
+        /* Set the scheduling algorithm to PCS or SCS */
+        pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+
+        /* Create the threads */
+        for (i=0; i < NUM_THREADS; i++) {
+            pthread_create(&tid[i], &attr, runner, NULL);
+        }
+
+        /* Now join on each thread */
+        for (i=0; i < NUM_THREADS; i++) {
+            pthread_join(tid[i], NULL);
+        }
+    }
+
+    /* Each runner will begin control in this function */
+    void *runner(void *param) {
+        /* Do some work... */
+        pthread_exit(0);
+    }
+
+
+- CPU Scheduling in Linux
+
+    - As of version 2.5, the Linux kernel provides a scheduling algorithm that runs 
+        in constant time regardless of the number of tasks in the system.  The new
+        scheduler provides increased support for SMP, including processor affinity
+        and load balancing.
+
+    - The Linux scheduler is a preemptive, priority-based algorithm with two 
+        separate priority ranges:
+          - 0-99     Real-time
+          - 100-140  Nive values
+
+    - Linux assigns higher-priority tasks longer time quanta, and lower-priority 
+        tasks smaller time quanta.  Note that Linux treats processes and threads
+        as indistinguishable 'tasks'.
+
+    - Two priority queues are maintained: the 'active array' and 'expired array'.  
+        When tasks' time quantas are used up, they are put onto the expired array.
+        When the active array is empty, the tasks in the expired array are moved
+        to the active array.
