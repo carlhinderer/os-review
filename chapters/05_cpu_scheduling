@@ -1,0 +1,61 @@
+-------------------------------------------------
+CHAPTER 5 - CPU SCHEDULING
+-------------------------------------------------
+
+- Basic Concepts
+
+    1. CPU-IO Burst Cycle 
+         - CPU executes until it must wait (a CPU burst), usually for 
+             completion of an IO request (an IO burst)
+
+    2. CPU Scheduler
+         - The CPU Scheduler (aka Short Term Scheduler) selects a process in
+             memory that is ready to execute and allocates a CPU to it
+
+    3. Preemptive Scheduling
+         - Scheduling decisions must be made when:
+             1. The process switches from 'Running' to 'Waiting' due to io or wait()
+             2. The process switches from 'Running' to 'Ready' due to an interrupt
+             3. The process switches from 'Waiting' to 'Ready' due to io completion
+             4. The process terminates
+
+         - If scheduling only occurs with #1 and #4, the scheduling scheme is 
+             'non-preemptive'.  If scheduling also occurs at #2 or #3, the scheme is
+             'preemptive'.
+
+         - To avoid data inconsistensies that could arise from pre-empting the 
+             execution of system calls, UNIX systems wait for a system call to 
+             complete before doing a context switch.
+
+    4. Dispatcher
+         - The 'dispatcher' is the module that gives control of the CPU to a 
+             process picked by the CPU scheduler.
+
+         - The dispatcher is responsible for:
+             1. Switching context
+             2. Switching to user mode
+             3. Jumping to the proper location to restart execution
+
+         - The time it takes to stop one process and start another one is called
+             'dispatch latency'.
+
+
+- Criteria for Scheduling Algorithms
+
+    1. CPU Utilization = amount of time CPU is in use
+    2. Throughput = number of processes completed per time unit
+    3. Turnaround time = how long it takes to execute a process
+    4. Waiting Time = amount of time CPU sits idle
+    5. Response Time = amount of time for UI to start responding again
+
+
+- FCFS Algorithm
+    - All processes are put into a FIFO queue
+    - Easy to write and understand
+
+
+- Shortest Job First (SFJ) Algorithm
+    - Theoretical algorithm: just always pick the process with the shortest CPU burst
+    - Optimal waiting time
+    - Cannot actually be implemented by short term scheduler.  Some long term schedulers 
+        will actually try to predict burst by looking at previous bursts, though.
