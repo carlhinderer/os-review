@@ -1,0 +1,74 @@
+-------------------------------------------------
+CHAPTER 6 - PROCESS SYNCHRONIZATION
+-------------------------------------------------
+
+- Background
+
+    We pointed out before that our bounded buffer solution allows at most
+      BUFFER_SIZE - 1 items in the buffer at the same time.  Let's say we add an
+      integer variable 'counter' to remedy this problem.
+
+
+    /* Producer Process */
+    while (true) {
+        /* Produce an item in nextProduced */
+        while (counter == BUFFER_SIZE) ;
+        buffer[in] = nextProduced;
+        in = (in + 1) % BUFFER_SIZE;
+        counter++;
+    }
+
+
+    /* Consumer Process */
+    while (true) {
+        while (counter == 0) ;
+        nextConsumed = buffer[out];
+        out = (out + 1) % BUFFER_SIZE;
+        counter--;
+        /* Consume an item in nextConsumed */
+    }
+
+
+    These processes are implemented correctly, but they may not execute correctly
+      if they are running concurrently.  A 'race condition' occurs when the 
+      outcome of execution depends on the order of when data accesses take place.
+      To avoid these, some mechanism is required to ensure only one process 
+      alters the value of 'counter' at a time.
+
+
+- The Critical Section Problem
+
+    - A 'critical section' is a segment of code in which a process may be
+        changing shared resources.
+
+    - Each process must request permission to enter its critical section.  The
+        section of code implementing this request is the 'entry section'.
+
+    - The critical section may be followed by an 'exit section'.
+
+    - The remainder of the code is the 'remainder section'.
+
+
+    do {
+        ENTRY_SECTION
+        CRITICAL_SECTION
+        EXIT_SECTION
+        REMAINDER_SECTION
+    } while(TRUE);
+
+
+- Solving the Critical Section Problem
+
+    A solution to the Critical Section Problem must satisfy 3 requirements:
+
+      1. Mutual Exclusion = If P1 is executing in its critical section, then no
+           other processes can be executing in their critical sections.
+
+      2. Progress = If no process is executing its critical section, and some 
+           processes wish to enter their critical sections, then those processes
+           can participate in the decision on which will enter the critical 
+           section next, and this selection cannot be postponed indefinitely.
+
+      3. Bounded Waiting = There exists a limit to the number of times that other
+           processes are allowed to enter their critical sections after a
+           process has made the request.
