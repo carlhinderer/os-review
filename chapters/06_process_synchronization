@@ -51,8 +51,11 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
 
     do {
         ENTRY_SECTION
+
         CRITICAL_SECTION
+
         EXIT_SECTION
+
         REMAINDER_SECTION
     } while(TRUE);
 
@@ -72,3 +75,104 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
       3. Bounded Waiting = There exists a limit to the number of times that other
            processes are allowed to enter their critical sections after a
            process has made the request.
+
+
+- Peterson's Solution
+
+    We have 2 processes, Pi and Pj, and they alternate execution between their
+      critical and remainder sections.  We use two data items that are shared
+      between the 2 processes:
+
+      int turn;            /* Whose turn it is (i or j) */
+      boolean flag[2];     /* Indicates whether a process is ready to enter its CS */
+
+
+    Here is the structure of the solution (for process Pi):
+
+      do {
+          flag[i] = TRUE;
+          turn = j;
+          while (flag[j] && turn == j) ;
+
+          CRITICAL_SECTION
+
+          flag[i] = FALSE;
+
+          REMAINDER_SECTION
+      } while (TRUE);
+
+
+    If 2 assignments of 'turn' occur at the same time, one will overwrite the other one.
+       The eventual value of 'turn' determines which process is permitted to enter its
+       critical section first.
+
+
+- Locks
+
+    In general, any solution to the critical section problem requires some kind of lock.
+      A process must acquire a lock before entering a critical section.  It releases its
+      lock when it exits the critical section.
+
+
+    do {
+        ACQUIRE_LOCK
+
+        CRITICAL_SECTION
+
+        RELEASE_LOCK
+
+        REMAINDER_SECTION
+    } while (TRUE);
+
+
+- Synchronization Hardware
+
+    There are a few different ways to provide locks using hardware.
+
+    - If you have a non-preemptive kernel and a single CPU, can just disable
+        interrupts when a shared variable is being modified.
+
+    - Many modern computers have special instructions that allow us to test
+        and modify the contents of a word, or to swap the contents of two words,
+        atomically.
+
+
+      /* TestAndSet instruction */
+      boolean TestAndSet(boolean *target) {
+          boolean rv = *target;
+          *target = TRUE;
+          return rv;
+      }
+
+      /* Mutual-exclusion implementation with TestAndSet() */
+      do {
+          while (TestAndSetLock(&lock)) ;
+
+          CRITICAL_SECTION
+
+          lock = false;
+
+          REMAINDER_SECTION
+      }
+
+
+      /* Swap instruction */
+      void Swap(boolean *a, boolean *b) {
+          boolean temp = *a;
+          *a = *b;
+          *b = temp;
+      }
+
+      /* Mutual-exclustion implementation with Swap() */
+      do {
+          key = TRUE;
+          while (key == TRUE) {
+              Swap(&lock, &key);
+
+              CRITICAL_SECTION
+          }
+
+          lock = FALSE;
+
+          REMAINDER_SECTION
+      } while (TRUE);
