@@ -107,6 +107,7 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
        critical section first.
 
 
+
 - Locks
 
     In general, any solution to the critical section problem requires some kind of lock.
@@ -123,6 +124,7 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
 
         REMAINDER_SECTION
     } while (TRUE);
+
 
 
 - Synchronization Hardware
@@ -176,3 +178,113 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
 
           REMAINDER_SECTION
       } while (TRUE);
+
+
+
+- Bounded Waiting TestAndSet()
+
+    The algorithms above guarantee mutual exclusion, but they do not 
+      guarantee bounded waiting.  Here is a modified version that does:
+
+
+    /* Bounded Waiting TestAndSet() */
+    boolean waiting[n];
+    boolean lock;
+
+    do {
+        waiting[i] = TRUE;
+        key = TRUE;
+        while (waiting[i] && key) {
+            key = TestAndSet(&lock);
+        }
+        waiting[i] = FALSE;
+
+        CRITICAL_SECTION
+
+        /* This guarantees the bounding waiting requirement is met, 
+        *    because each waiting process has to wait n-1 turns at most.
+        */
+        j = (i + 1) % n;
+        while ((j != i) && !waiting[j]) {
+            j = (j + 1) % n;
+        }
+
+        if (j == i) {
+            lock = FALSE;
+        } else {
+            waiting[j] = FALSE;
+        }
+
+        REMAINDER_SECTION
+    }
+
+
+
+- Semaphores
+
+    The hardware-based solutions above are hard to use for application
+      programmers, so we can use 'semaphores' to overcome this.  A semaphore
+      is an integer variable that has two standard operations: wait() and
+      signal().  
+
+
+    wait(S) {
+        while (S <= 0) ;
+        S--; 
+    }
+
+    signal(S) {
+        S++;
+    }
+
+
+    All the code in the wait and signal operations must be executed indivisbly,
+      so no 2 processes can modify the semaphore at the same time.
+
+
+
+- Types of Semaphores
+
+    - The value of a 'counting semaphore' can range over an unrestricted
+        domain.
+
+    - The value of a 'binary semaphore' can only be 0 or 1.  These are also
+        known as 'mutex locks'.
+
+
+
+- Semaphores with Spinlocks
+
+    Lets assume we have process P1 (which contains statement S1) and process
+      P2 (which contains statement S2).  We require that S2 can begin 
+      executing only after S1 is finished.
+
+    We can do this by having P1 and P2 share a common semaphore 'synch', 
+      which is initialized to 0.  
+
+
+    /* Process P1 */
+    S1;
+    signal(synch);
+
+    /* Process P2 */
+    wait(synch);
+    S2;
+
+
+    /* Mutual exclusion with semaphores */
+    do {
+        waiting(mutex);
+
+        CRITICAL_SECTION
+
+        signal(mutex);
+
+        REMAINDER_SECTION
+    } while (TRUE);
+
+
+    The main disadvantage with this approach is that is requires 'busy waiting'.  
+      This type of semaphore is called a 'spinlock', since the CPU keeps spinning
+      waiting for the lock to release.  They are useful, but meant to be used when
+      the lock will be held for a short amount of time.
