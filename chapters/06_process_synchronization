@@ -487,3 +487,93 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
       3. Use an asymmetric solution, such as having an odd philosopher pick up
            the left chopstick, then the right, and having even philosophers
            pick up right, then left.
+
+
+
+- Monitors
+
+    Since writing semaphores is difficult to code and debug, monitors were created
+      to give programmers a higher-level construct to use for mutual exclusion.
+
+    A monitor ensures that only one process at a time can active within the monitor.
+
+
+    monitor monitorName {
+        // Shared variable declarations
+
+        procedure p1() { ... }
+        procedure p2() { ... }
+        ...
+        procedure pn() { ... }
+
+        procedure initialize() { ... }
+    }
+
+
+
+- The Condition Construct
+
+    A programmer that needs to write a tailor-made synchronization scheme can
+      define one or more variables of type condition:
+
+      condition x, y;
+
+
+    The only operations that can be invoked on a condition are 'wait()' and 'signal()'
+
+      x.wait()    Means the process s is suspended until another process invokes 
+      x.signal()  Which resumes one suspended process
+
+
+
+- Solving the Dining Philosophers Problem Using Monitors
+
+    Note that deadlock is not possible with this solution, but
+      starvation is.
+
+
+    monitor dp {
+        enum {THINKING, HUNGRY, EATING} state[5];
+        condition self[5];   /* Allows process to wait */
+
+        void pickup(int i) {
+            state[i] = HUNGRY;
+            test(i);
+            if (state[i] != EATING)
+                self[i].wait();
+        }
+
+        void putdown(int i) {
+            state[i] = THINKING;
+            test((i+4) % 5);
+            test((i+1) % 5);
+        }
+
+        void test(int i) {
+            if ((state[(i+4) % 5] != EATING) &&
+                (state[i] == HUNGRY) &&
+                (state[(i + 1) % 5] != EATING)) {
+                    state[i] = EATING;
+                    self[i].signal();
+                }
+        }
+
+        void initialize() {
+            for (int i=0; i < 5; i++)
+                state[i] = THINKING;
+        }
+    }
+
+
+    /* Philosopher i must invoke the operations in this order */
+    dp.pickup(i);
+    ...
+    eat
+    ...
+    dp.putdown(i);
+
+
+
+- Synchronization in Linux
+
+    - Kernel provides spinlocks, semaphores, and reader/writer versions of both.
