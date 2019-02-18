@@ -397,3 +397,93 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
 
         // Consume the item in nextc
     } while (TRUE);
+
+
+
+- The Readers-Writers Problem
+
+    We solve the readers-writers problem by allowing concurrent reads, but
+      making readers wait when a writer is writing.
+
+      1. The first version only blocks readers if a writer already has a lock.
+           Otherwise, the readers go ahead.  This does allow starvation of
+           writers.
+
+      2. The second version always allows a writer to have a lock if it 
+           requests it.  This does allow starvation of readers.
+
+
+    This is a solution that uses the first case.  The semaphores 'mutex' and
+      'wrt' are both initialized to 1.  'readcount' keeps track of how many
+      current readers there are.
+
+    /* Shared data */
+    semaphore mutex, wrt;
+    int readcount;
+
+
+    /* Writer process */
+    do {
+        wait(wrt);
+
+        // Writing is performed
+
+        signal(wrt);
+    } while (TRUE);
+
+
+    /* Reader process */
+    do {
+        wait(mutex);
+        readcount++;
+        if (readcount == 1)
+            wait(wrt);
+        signal(mutex);
+
+        // Reading is performed
+
+        wait(mutex);
+        readcount--;
+        if (readcount == 0)
+            signal(wrt);
+        signal(mutex);
+    } while (TRUE);
+
+
+
+- Dining Philosophers Problem'
+
+    A philosopher has a chopstick to their left and one to their right, and they
+      need both to eat.  We need to provide the chopsticks to the philosophers
+      so that they can eat in a deadlock-free and starvation-free manner.
+
+
+    /* Shared data, with all semaphores initialized to 1 */
+    semaphore chopstick[5];
+
+    /* Philosopher i */
+    do {
+        wait(chopstick[i]);
+        wait(chopstick[(i+1) % 5]);
+
+        // Eat
+
+        signal(chopstick[i]);
+        signal(chopstick[(i+1) % 5]);
+
+        // Think
+    } while (TRUE);
+
+
+    If we guarantee that no 2 diners are eating next to each other, starvation 
+      may occur.  If we let each philosopher pick up their left chopstick first,
+      deadlock may occur.  There are a few different solutions to this:
+
+      1. Only allow (n-1) philosophers at the table.
+
+      2. Only allow a philosopher to pick up a chopstick if both are available.
+           (The chopsticks must be picked up in a critical section.)
+
+      3. Use an asymmetric solution, such as having an odd philosopher pick up
+           the left chopstick, then the right, and having even philosophers
+           pick up right, then left.
