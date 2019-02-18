@@ -70,8 +70,41 @@ CHAPTER 7 - DEADLOCKS
       the necessary conditions does not hold.
 
     'Deadlock avoidance' requires giving the OS additional information concerning which
-      resources the process will use.
+      resources the process will use.  With this full knowledge of all the resources
+      each process will use, deadlock can be prevented ahead of time.
 
 
 
-- 
+- Deadlock Prevention
+
+    1. Preventing mutual exclusion
+        - Don't have sharable resources.
+
+    2. Preventing hold and wait
+        - Don't allow a process to request a new resource until it releases all the 
+            resources it has.
+
+    3. Preventing no preemption
+        - If a process tries to acquire resources and is denied, it immediately 
+            releases all the resources it has.
+
+    4. Preventing circular wait
+        - Keep track of RAG and don't allow cycles to occur
+
+
+
+- Deadlock Avoidance Algorithms
+
+    1. Safe State Algorithm  (Don't allocate resources if it results in unsafe state)
+    2. RAG Algorithm  (Detect cycles in RAGs before they occur)
+    3. Bankers Algorithm
+
+
+
+- Deadlock Recovery Strategies
+
+    1. Process Termination
+        - Can just abort all deadlocked processes, but this is expensive
+        - Alternatively, can abort one process at a time until cycle is eliminated
+
+    2. Resource Prevention
