@@ -253,7 +253,7 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
 
 
 
-- Semaphores with Spinlocks
+- Semaphores With Spinlocks
 
     Lets assume we have process P1 (which contains statement S1) and process
       P2 (which contains statement S2).  We require that S2 can begin 
@@ -288,3 +288,112 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
       This type of semaphore is called a 'spinlock', since the CPU keeps spinning
       waiting for the lock to release.  They are useful, but meant to be used when
       the lock will be held for a short amount of time.
+
+
+
+- Semaphores Without Spinlocks
+
+    To overcome the need for busy waiting, we can modify the wait() and signal()
+      operations.  When a wait() operation gets a negative semaphore value, it must
+      wait.  
+
+    But instead of busy waiting, the process can block itself.  The 'block'
+      operation puts the process into a waiting queue associated with the semaphore,
+      and the process is switched into 'Waiting' state.  Later, the 'wakeup'
+      operation will resume execution of the process when it is scheduled by the 
+      CPU scheduler.
+
+
+    /* Semaphore struct */
+    typedef struct{
+        int value;
+        struct process *list;     /* List of PCBs */
+    } semaphore;
+
+
+    /* Wait operation */
+    wait(semaphore *S) {
+        S->value--;
+        if (S->value < 0) {
+            ADD_PROCESS_TO S->list;
+            block();
+        }
+    }
+
+
+    /* Signal operation */
+    signal(semaphore *S) {
+        S->value++;
+        if (S->value >= 0) {
+            REMOVE PROCESS P FROM S->list;
+            wakeup(P);
+        }
+    }
+
+
+
+- Deadlocks
+
+    The implementation of a semaphore with a waiting queue may result in a 
+      'deadlock', in which processes are waiting for an event that never occurs.
+      For example, if we have 2 processes, P0 and P1,
+
+
+             P0            P1
+         ----------    ----------
+          wait(S);      wait(Q);
+          wait(Q);      wait(S);
+            ...           ...
+         signal(S);    signal(Q);
+         signal(Q);    signal(S);
+
+
+- Starvation
+
+    'Starvation' occurs if a process is kept waiting indefinitely, such as if a
+      stack was used instead of a quene.
+
+
+
+- The Bounded Buffer Problem
+
+    - We assume we have a pool of n buffers, each capable of holding one item.
+
+    - The 'mutex' semaphore provides mutual exclusion for accesses to the buffer
+        pool.  It is initialized to 1.
+
+    - The 'empty' and 'full' semaphores count the number of empty and full buffers.
+        'empty' is initialized to n.  'full' is initialized to 0.
+
+
+    Note the symmetry between the producer and consumer processes.  We can interpret
+      this code as the producer producing full buffers for the consumer or as the
+      consumer producing empty buffers for the producer.
+
+
+    /* Producer process */
+    do {
+        // Produce an item in nextp
+
+        wait(empty);
+        wait(mutex);
+
+        // Add nextp to buffer
+
+        signal(mutex);
+        signal(full);
+    } while (TRUE);
+
+
+    /* Consumer process */
+    do {
+        wait(full);
+        wait(mutex);
+
+        // Remove an item from buffer to nextc
+
+        signal(mutex);
+        signal(empty);
+
+        // Consume the item in nextc
+    } while (TRUE);
