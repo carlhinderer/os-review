@@ -576,4 +576,7 @@ CHAPTER 6 - PROCESS SYNCHRONIZATION
 
 - Synchronization in Linux
 
-    - Kernel provides spinlocks, semaphores, and reader/writer versions of both.
+    The kernel provides: 
+      - spinlocks (for short lock durations) 
+      - semaphores (for longer lock durations)
+      - reader/writer versions of both.

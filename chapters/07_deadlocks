@@ -1,0 +1,77 @@
+-------------------------------------------------
+CHAPTER 7 - DEADLOCKS
+-------------------------------------------------
+
+- System Model
+
+    A system consists of a finite number of resources to be distributed among a
+      number of competing processes.  Memory, CPU cycles, files, and IO devices are
+      examples of resource types.
+
+    A process may acquire and use resources.  The request and release of resources
+      are system calls.
+        1. Request
+        2. Use
+        3. Release
+
+    Examples of request and release:
+      request() and release()  a device
+      open() and close()       a file
+      allocate() and free()    memory
+      wait() and signal()      for resources not managed by the OS
+
+
+
+- Deadlock Characterization
+
+    A deadlock situation can arise if the following 4 conditions hold 
+      simultaneously in a system:
+
+      1. Mutual Exclusion = at least one resource must be held in a nonsharable mode
+      2. Hold and Wait    = a process must be holding at least one resource and
+                              waiting to acquire additional resources held by other
+                              processes
+      3. No Preemption    = resources cannot be preempted, only released voluntarily
+      4. Circular Wait    = p0 is waiting for p1, p1 for p2, p2 for p0
+
+
+
+- Resource Allocation Graphs
+
+    Deadlocks can be described in terms of a digraph called a System Resource
+      Allocation Graph.  
+
+      V = sets of all processes {P1, P2, ..., Pn} and resources {R1, R2, ..., Rn}
+
+      A directed edge Pi->Ri is a 'request edge'
+      A directed edge Ri->Pi is an 'assignment edge'
+
+
+    If the graph contains no cycles, then no deadlock exists.  If the graph contains
+      a cycle, deadlocks may exist.
+
+
+
+- Methods for Handling Deadlocks
+
+    Generally speaking, there are 3 ways to handle deadlocks:
+
+      1. Use a protocol that prevents or avoids deadlocks, ensuring a deadlock never
+           occurs in the system.
+
+      2. Allow the system to enter a deadlock state, detect it, and recover.
+
+      3. Ignore the problem and pretend that deadlocks do not occur.  (This is the
+           method used by most operating systems, which is why it is up to 
+           application developers to prevent it.)
+
+
+    'Deadlock prevention' provides a set of methods for ensuring that at least one of
+      the necessary conditions does not hold.
+
+    'Deadlock avoidance' requires giving the OS additional information concerning which
+      resources the process will use.
+
+
+
+- 
